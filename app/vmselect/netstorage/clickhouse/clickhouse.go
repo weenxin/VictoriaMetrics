@@ -10,6 +10,7 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 	"log"
 	"strings"
+	"time"
 )
 
 
@@ -70,7 +71,7 @@ func newClickhouseClient() (*sql.DB, error) {
 func getMetricName(sq *storage.SearchQuery) (string,error){
 	for _, tags := range sq.TagFilterss {
 		for _,tag := range tags{
-			if string(tag.Key) == "__name__"{
+			if string(tag.Key) == "__name__" || string(tag.Key) == ""{
 				return string(tag.Value),nil
 			}
 		}
@@ -156,11 +157,14 @@ func getGroupbyQuery() string {
 
 func getWhereQuery(sq *storage.SearchQuery) string{
 	timeQuery := fmt.Sprintf("%v > %v AND %v < %v",
-		*clickhouseTimesampFiled,sq.MinTimestamp, *clickhouseTimesampFiled,sq.MaxTimestamp)
+		*clickhouseTimesampFiled,sq.MinTimestamp/1000, *clickhouseTimesampFiled,sq.MaxTimestamp/1000)
 	fieldFilter := []string{timeQuery}
 	for _,filters := range sq.TagFilterss {
 		for _, filter := range filters{
-			fieldFilter = append(fieldFilter,getFiledOperationQuery(filter))
+			if string(filter.Key) != "" && string(filter.Key) != "__name__"{
+				fieldFilter = append(fieldFilter,getFiledOperationQuery(filter))
+			}
+
 		}
 	}
 
@@ -211,7 +215,7 @@ func metricNameEqueal(first *storage.MetricName, second *storage.MetricName)bool
 func addMetrics(timeSeries []*Result,meticName string, columns []string,
 	values []interface{}) []*Result{
 	formatMetricName := fomatMetricName(meticName,columns,values[1:len(values)-1])
-	timestamp := *(values[0].(*int64))
+	timestamp := (values[0].(*time.Time)).Unix()
 	value := *(values[len(values)-1].(*float64))
 
 
@@ -250,6 +254,8 @@ func query(sq *storage.SearchQuery, fetchData bool, deadline netstorage.Deadline
 
 	query := formatQuery(table,aggregation,filed,sq)
 
+
+
 	rows, err := connect.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -262,10 +268,10 @@ func query(sq *storage.SearchQuery, fetchData bool, deadline netstorage.Deadline
 	}
 
 	coloumnLen := len(columns)
-	fileds := make([]interface{} ,coloumnLen)
+	fileds := make([]interface{},0 ,coloumnLen)
 
-	fileds = append(fileds, new(int64))
-	for i := 0 ; i < coloumnLen ; i ++ {
+	fileds = append(fileds, new(time.Time))
+	for i := 1 ; i < coloumnLen-1 ; i ++ {
 		fileds = append(fileds, new(string))
 	}
 	fileds = append(fileds,new(float64))
