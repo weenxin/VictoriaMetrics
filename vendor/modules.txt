@@ -8,6 +8,17 @@ cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 # cloud.google.com/go/storage v1.10.0
 cloud.google.com/go/storage
+# github.com/ClickHouse/clickhouse-go v1.4.1
+github.com/ClickHouse/clickhouse-go
+github.com/ClickHouse/clickhouse-go/lib/binary
+github.com/ClickHouse/clickhouse-go/lib/cityhash102
+github.com/ClickHouse/clickhouse-go/lib/column
+github.com/ClickHouse/clickhouse-go/lib/data
+github.com/ClickHouse/clickhouse-go/lib/leakypool
+github.com/ClickHouse/clickhouse-go/lib/lz4
+github.com/ClickHouse/clickhouse-go/lib/protocol
+github.com/ClickHouse/clickhouse-go/lib/types
+github.com/ClickHouse/clickhouse-go/lib/writebuffer
 # github.com/VictoriaMetrics/fastcache v1.5.7
 github.com/VictoriaMetrics/fastcache
 # github.com/VictoriaMetrics/fasthttp v1.0.1
@@ -67,6 +78,8 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
+# github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58
+github.com/cloudflare/golz4
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.4.2

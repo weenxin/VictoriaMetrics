@@ -1,4 +1,4 @@
-package vmselect
+package main
 
 import (
 	"errors"

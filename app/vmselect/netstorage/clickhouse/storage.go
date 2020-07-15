@@ -10,15 +10,10 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 	"github.com/VictoriaMetrics/metrics"
 	"runtime"
-	"sort"
 	"sync"
 )
 
 var (
-	maxTagKeysPerSearch   = flag.Int("clickhouse.maxTagKeys", 100e3,
-		"The maximum number of tag keys returned per search")
-	maxTagValuesPerSearch = flag.Int("search.maxTagValues", 100e3, "The maximum number of tag values returned per search")
-	maxMetricsPerSearch   = flag.Int("search.maxUniqueTimeseries", 300e3, "The maximum number of unique time series each search can scan")
 
 	address = flag.String("clickhouse.address","public-chdb183.idczw.hb1.kwaidc.com:9000","clickhouse address like ")
 	clickhouseUserName = flag.String("clickhouse.user", "default", "clickhouse cluster user name ")
@@ -133,68 +128,75 @@ func DeleteSeries(sq *storage.SearchQuery) (int, error) {
 
 // GetLabels returns labels until the given deadline.
 func GetLabels(deadline netstorage.Deadline) ([]string, error) {
-	labels, err := vmstorage.SearchTagKeys(*maxTagKeysPerSearch)
-	if err != nil {
-		return nil, fmt.Errorf("error during labels search: %w", err)
-	}
 
-	// Substitute "" with "__name__"
-	for i := range labels {
-		if labels[i] == "" {
-			labels[i] = "__name__"
-		}
-	}
-
-	// Sort labels like Prometheus does
-	sort.Strings(labels)
-
-	return labels, nil
+	return *clickhouseTags,nil
+	//
+	//labels, err := vmstorage.SearchTagKeys(*maxTagKeysPerSearch)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error during labels search: %w", err)
+	//}
+	//
+	//// Substitute "" with "__name__"
+	//for i := range labels {
+	//	if labels[i] == "" {
+	//		labels[i] = "__name__"
+	//	}
+	//}
+	//
+	//// Sort labels like Prometheus does
+	//sort.Strings(labels)
+	//
+	//return labels, nil
 }
 
 // GetLabelValues returns label values for the given labelName
 // until the given deadline.
 func GetLabelValues(labelName string, deadline netstorage.Deadline) ([]string, error) {
-	if labelName == "__name__" {
-		labelName = ""
-	}
 
-	// Search for tag values
-	labelValues, err := vmstorage.SearchTagValues([]byte(labelName), *maxTagValuesPerSearch)
-	if err != nil {
-		return nil, fmt.Errorf("error during label values search for labelName=%q: %w", labelName, err)
-	}
-
-	// Sort labelValues like Prometheus does
-	sort.Strings(labelValues)
-
-	return labelValues, nil
+	return []string{} , nil
+	//
+	//if labelName == "__name__" {
+	//	labelName = ""
+	//}
+	//
+	//// Search for tag values
+	//labelValues, err := vmstorage.SearchTagValues([]byte(labelName), *maxTagValuesPerSearch)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error during label values search for labelName=%q: %w", labelName, err)
+	//}
+	//
+	//// Sort labelValues like Prometheus does
+	//sort.Strings(labelValues)
+	//
+	//return labelValues, nil
 }
 
 // GetLabelEntries returns all the label entries until the given deadline.
 func GetLabelEntries(deadline netstorage.Deadline) ([]storage.TagEntry, error) {
-	labelEntries, err := vmstorage.SearchTagEntries(*maxTagKeysPerSearch, *maxTagValuesPerSearch)
-	if err != nil {
-		return nil, fmt.Errorf("error during label entries request: %w", err)
-	}
-
-	// Substitute "" with "__name__"
-	for i := range labelEntries {
-		e := &labelEntries[i]
-		if e.Key == "" {
-			e.Key = "__name__"
-		}
-	}
-
-	// Sort labelEntries by the number of label values in each entry.
-	sort.Slice(labelEntries, func(i, j int) bool {
-		a, b := labelEntries[i].Values, labelEntries[j].Values
-		if len(a) != len(b) {
-			return len(a) > len(b)
-		}
-		return labelEntries[i].Key > labelEntries[j].Key
-	})
-
-	return labelEntries, nil
+	return []storage.TagEntry{},nil
+	//labelEntries, err := vmstorage.SearchTagEntries(*maxTagKeysPerSearch, *maxTagValuesPerSearch)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error during label entries request: %w", err)
+	//}
+	//
+	//// Substitute "" with "__name__"
+	//for i := range labelEntries {
+	//	e := &labelEntries[i]
+	//	if e.Key == "" {
+	//		e.Key = "__name__"
+	//	}
+	//}
+	//
+	//// Sort labelEntries by the number of label values in each entry.
+	//sort.Slice(labelEntries, func(i, j int) bool {
+	//	a, b := labelEntries[i].Values, labelEntries[j].Values
+	//	if len(a) != len(b) {
+	//		return len(a) > len(b)
+	//	}
+	//	return labelEntries[i].Key > labelEntries[j].Key
+	//})
+	//
+	//return labelEntries, nil
 }
 
 // GetTSDBStatusForDate returns tsdb status according to https://prometheus.io/docs/prometheus/latest/querying/api/#tsdb-stats
