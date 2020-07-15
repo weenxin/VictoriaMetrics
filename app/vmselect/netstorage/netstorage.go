@@ -496,60 +496,60 @@ var ssPool sync.Pool
 // ProcessSearchQuery performs sq on storage nodes until the given deadline.
 //
 // Results.RunParallel or Results.Cancel must be called on the returned Results.
-func ProcessSearchQuery(sq *storage.SearchQuery, fetchData bool, deadline Deadline) (*Results, error) {
-	// Setup search.
-	tfss, err := setupTfss(sq.TagFilterss)
-	if err != nil {
-		return nil, err
-	}
-	tr := storage.TimeRange{
-		MinTimestamp: sq.MinTimestamp,
-		MaxTimestamp: sq.MaxTimestamp,
-	}
-	if err := vmstorage.CheckTimeRange(tr); err != nil {
-		return nil, err
-	}
-
-	vmstorage.WG.Add(1)
-	defer vmstorage.WG.Done()
-
-	sr := getStorageSearch()
-	sr.Init(vmstorage.Storage, tfss, tr, *maxMetricsPerSearch)
-
-	m := make(map[string][]storage.BlockRef)
-	var orderedMetricNames []string
-	blocksRead := 0
-	for sr.NextMetricBlock() {
-		blocksRead++
-		if time.Until(deadline.Deadline) < 0 {
-			return nil, fmt.Errorf("timeout exceeded while fetching data block #%d from storage: %s", blocksRead, deadline.String())
-		}
-		metricName := sr.MetricBlockRef.MetricName
-		brs := m[string(metricName)]
-		if len(brs) == 0 {
-			orderedMetricNames = append(orderedMetricNames, string(metricName))
-		}
-		m[string(metricName)] = append(brs, *sr.MetricBlockRef.BlockRef)
-	}
-	if err := sr.Error(); err != nil {
-		return nil, fmt.Errorf("search error after reading %d data blocks: %w", blocksRead, err)
-	}
-
-	var rss Results
-	rss.tr = tr
-	rss.fetchData = fetchData
-	rss.deadline = deadline
-	pts := make([]packedTimeseries, len(orderedMetricNames))
-	for i, metricName := range orderedMetricNames {
-		pts[i] = packedTimeseries{
-			metricName: metricName,
-			brs:        m[metricName],
-		}
-	}
-	rss.packedTimeseries = pts
-	rss.sr = sr
-	return &rss, nil
-}
+//func ProcessSearchQuery(sq *storage.SearchQuery, fetchData bool, deadline Deadline) (*Results, error) {
+//	// Setup search.
+//	tfss, err := setupTfss(sq.TagFilterss)
+//	if err != nil {
+//		return nil, err
+//	}
+//	tr := storage.TimeRange{
+//		MinTimestamp: sq.MinTimestamp,
+//		MaxTimestamp: sq.MaxTimestamp,
+//	}
+//	if err := vmstorage.CheckTimeRange(tr); err != nil {
+//		return nil, err
+//	}
+//
+//	vmstorage.WG.Add(1)
+//	defer vmstorage.WG.Done()
+//
+//	sr := getStorageSearch()
+//	sr.Init(vmstorage.Storage, tfss, tr, *maxMetricsPerSearch)
+//
+//	m := make(map[string][]storage.BlockRef)
+//	var orderedMetricNames []string
+//	blocksRead := 0
+//	for sr.NextMetricBlock() {
+//		blocksRead++
+//		if time.Until(deadline.Deadline) < 0 {
+//			return nil, fmt.Errorf("timeout exceeded while fetching data block #%d from storage: %s", blocksRead, deadline.String())
+//		}
+//		metricName := sr.MetricBlockRef.MetricName
+//		brs := m[string(metricName)]
+//		if len(brs) == 0 {
+//			orderedMetricNames = append(orderedMetricNames, string(metricName))
+//		}
+//		m[string(metricName)] = append(brs, *sr.MetricBlockRef.BlockRef)
+//	}
+//	if err := sr.Error(); err != nil {
+//		return nil, fmt.Errorf("search error after reading %d data blocks: %w", blocksRead, err)
+//	}
+//
+//	var rss Results
+//	rss.tr = tr
+//	rss.fetchData = fetchData
+//	rss.deadline = deadline
+//	pts := make([]packedTimeseries, len(orderedMetricNames))
+//	for i, metricName := range orderedMetricNames {
+//		pts[i] = packedTimeseries{
+//			metricName: metricName,
+//			brs:        m[metricName],
+//		}
+//	}
+//	rss.packedTimeseries = pts
+//	rss.sr = sr
+//	return &rss, nil
+//}
 
 func setupTfss(tagFilterss [][]storage.TagFilter) ([]*storage.TagFilters, error) {
 	tfss := make([]*storage.TagFilters, 0, len(tagFilterss))

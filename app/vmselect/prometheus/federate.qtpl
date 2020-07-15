@@ -1,12 +1,13 @@
 {% import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 ) %}
 
 {% stripspace %}
 
 // Federate writes rs in /federate format.
 // See https://prometheus.io/docs/prometheus/latest/federation/
-{% func Federate(rs *netstorage.Result) %}
+{% func Federate(rs *clickhouse.Result) %}
 	{% if len(rs.Timestamps) == 0 || len(rs.Values) == 0 %}{% return %}{% endif %}
 	{%= prometheusMetricName(&rs.MetricName) %}{% space %}
 	{%f= rs.Values[len(rs.Values)-1] %}{% space %}

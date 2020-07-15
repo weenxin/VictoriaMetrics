@@ -3,6 +3,7 @@ package prometheus
 import (
 	"flag"
 	"fmt"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"io"
 	"math"
 	"net/http"
@@ -80,7 +81,7 @@ func FederateHandler(startTime time.Time, w http.ResponseWriter, r *http.Request
 		MaxTimestamp: end,
 		TagFilterss:  tagFilterss,
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, true, deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, true, deadline)
 	if err != nil {
 		return fmt.Errorf("cannot fetch data for %q: %w", sq, err)
 	}
@@ -88,7 +89,7 @@ func FederateHandler(startTime time.Time, w http.ResponseWriter, r *http.Request
 	resultsCh := make(chan *quicktemplate.ByteBuffer)
 	doneCh := make(chan error)
 	go func() {
-		err := rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+		err := rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 			bb := quicktemplate.AcquireByteBuffer()
 			WriteFederate(bb, rs)
 			resultsCh <- bb
@@ -155,7 +156,7 @@ func exportHandler(w http.ResponseWriter, matches []string, start, end int64, fo
 	writeResponseFunc := WriteExportStdResponse
 	writeLineFunc := WriteExportJSONLine
 	if maxRowsPerLine > 0 {
-		writeLineFunc = func(w io.Writer, rs *netstorage.Result) {
+		writeLineFunc = func(w io.Writer, rs *clickhouse.Result) {
 			valuesOrig := rs.Values
 			timestampsOrig := rs.Timestamps
 			values := valuesOrig
@@ -200,7 +201,7 @@ func exportHandler(w http.ResponseWriter, matches []string, start, end int64, fo
 		MaxTimestamp: end,
 		TagFilterss:  tagFilterss,
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, true, deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, true, deadline)
 	if err != nil {
 		return fmt.Errorf("cannot fetch data for %q: %w", sq, err)
 	}
@@ -208,7 +209,7 @@ func exportHandler(w http.ResponseWriter, matches []string, start, end int64, fo
 	resultsCh := make(chan *quicktemplate.ByteBuffer, runtime.GOMAXPROCS(-1))
 	doneCh := make(chan error)
 	go func() {
-		err := rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+		err := rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 			bb := quicktemplate.AcquireByteBuffer()
 			writeLineFunc(bb, rs)
 			resultsCh <- bb
@@ -341,14 +342,14 @@ func labelValuesWithMatches(labelName string, matches []string, start, end int64
 		MaxTimestamp: end,
 		TagFilterss:  tagFilterss,
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, false, deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, false, deadline)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch data for %q: %w", sq, err)
 	}
 
 	m := make(map[string]struct{})
 	var mLock sync.Mutex
-	err = rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+	err = rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 		labelValue := rs.MetricName.GetTagValue(labelName)
 		if len(labelValue) == 0 {
 			return
@@ -492,14 +493,14 @@ func labelsWithMatches(matches []string, start, end int64, deadline netstorage.D
 		MaxTimestamp: end,
 		TagFilterss:  tagFilterss,
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, false, deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, false, deadline)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch data for %q: %w", sq, err)
 	}
 
 	m := make(map[string]struct{})
 	var mLock sync.Mutex
-	err = rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+	err = rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 		mLock.Lock()
 		tags := rs.MetricName.Tags
 		for i := range tags {
@@ -578,7 +579,7 @@ func SeriesHandler(startTime time.Time, w http.ResponseWriter, r *http.Request) 
 		MaxTimestamp: end,
 		TagFilterss:  tagFilterss,
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, false, deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, false, deadline)
 	if err != nil {
 		return fmt.Errorf("cannot fetch data for %q: %w", sq, err)
 	}
@@ -586,7 +587,7 @@ func SeriesHandler(startTime time.Time, w http.ResponseWriter, r *http.Request) 
 	resultsCh := make(chan *quicktemplate.ByteBuffer)
 	doneCh := make(chan error)
 	go func() {
-		err := rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+		err := rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 			bb := quicktemplate.AcquireByteBuffer()
 			writemetricNameObject(bb, &rs.MetricName)
 			resultsCh <- bb

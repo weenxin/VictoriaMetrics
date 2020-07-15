@@ -1,12 +1,13 @@
 {% import (
 	"github.com/valyala/quicktemplate"
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 ) %}
 
 {% stripspace %}
 
-{% func ExportPrometheusLine(rs *netstorage.Result) %}
+{% func ExportPrometheusLine(rs *clickhouse.Result) %}
 	{% if len(rs.Timestamps) == 0 %}{% return %}{% endif %}
 	{% code bb := quicktemplate.AcquireByteBuffer() %}
 	{% code writeprometheusMetricName(bb, &rs.MetricName) %}
@@ -18,7 +19,7 @@
 	{% code quicktemplate.ReleaseByteBuffer(bb) %}
 {% endfunc %}
 
-{% func ExportJSONLine(rs *netstorage.Result) %}
+{% func ExportJSONLine(rs *clickhouse.Result) %}
 	{% if len(rs.Timestamps) == 0 %}{% return %}{% endif %}
 	{
 		"metric":{%= metricNameObject(&rs.MetricName) %},
@@ -45,7 +46,7 @@
 	}{% newline %}
 {% endfunc %}
 
-{% func ExportPromAPILine(rs *netstorage.Result) %}
+{% func ExportPromAPILine(rs *clickhouse.Result) %}
 {
 	"metric": {%= metricNameObject(&rs.MetricName) %},
 	"values": {%= valuesWithTimestamps(rs.Values, rs.Timestamps) %}

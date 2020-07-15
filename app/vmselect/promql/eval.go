@@ -3,6 +3,7 @@ package promql
 import (
 	"flag"
 	"fmt"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"math"
 	"runtime"
 	"sync"
@@ -640,7 +641,7 @@ func evalRollupFuncWithMetricExpr(ec *EvalConfig, name string, rf rollupFunc,
 		MaxTimestamp: ec.End,
 		TagFilterss:  [][]storage.TagFilter{tfs},
 	}
-	rss, err := netstorage.ProcessSearchQuery(sq, true, ec.Deadline)
+	rss, err := clickhouse.ProcessSearchQuery(sq, true, ec.Deadline)
 	if err != nil {
 		return nil, err
 	}
@@ -720,9 +721,10 @@ func getRollupMemoryLimiter() *memoryLimiter {
 	return &rollupMemoryLimiter
 }
 
-func evalRollupWithIncrementalAggregate(name string, iafc *incrementalAggrFuncContext, rss *netstorage.Results, rcs []*rollupConfig,
+func evalRollupWithIncrementalAggregate(name string, iafc *incrementalAggrFuncContext, rss *clickhouse.Results,
+	rcs []*rollupConfig,
 	preFunc func(values []float64, timestamps []int64), sharedTimestamps []int64, removeMetricGroup bool) ([]*timeseries, error) {
-	err := rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+	err := rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 		preFunc(rs.Values, rs.Timestamps)
 		ts := getTimeseries()
 		defer putTimeseries(ts)
@@ -750,11 +752,11 @@ func evalRollupWithIncrementalAggregate(name string, iafc *incrementalAggrFuncCo
 	return tss, nil
 }
 
-func evalRollupNoIncrementalAggregate(name string, rss *netstorage.Results, rcs []*rollupConfig,
+func evalRollupNoIncrementalAggregate(name string, rss *clickhouse.Results, rcs []*rollupConfig,
 	preFunc func(values []float64, timestamps []int64), sharedTimestamps []int64, removeMetricGroup bool) ([]*timeseries, error) {
 	tss := make([]*timeseries, 0, rss.Len()*len(rcs))
 	var tssLock sync.Mutex
-	err := rss.RunParallel(func(rs *netstorage.Result, workerID uint) {
+	err := rss.RunParallel(func(rs *clickhouse.Result, workerID uint) {
 		preFunc(rs.Values, rs.Timestamps)
 		for _, rc := range rcs {
 			if tsm := newTimeseriesMap(name, sharedTimestamps, &rs.MetricName); tsm != nil {

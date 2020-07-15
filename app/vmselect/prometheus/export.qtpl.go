@@ -7,6 +7,7 @@ package prometheus
 //line app/vmselect/prometheus/export.qtpl:1
 import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 	"github.com/valyala/quicktemplate"
 )
@@ -62,7 +63,7 @@ func StreamExportPrometheusLine(qw422016 *qt422016.Writer, rs *netstorage.Result
 }
 
 //line app/vmselect/prometheus/export.qtpl:19
-func WriteExportPrometheusLine(qq422016 qtio422016.Writer, rs *netstorage.Result) {
+func WriteExportPrometheusLine(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:19
 	qw422016 := qt422016.AcquireWriter(qq422016)
 //line app/vmselect/prometheus/export.qtpl:19
@@ -73,7 +74,7 @@ func WriteExportPrometheusLine(qq422016 qtio422016.Writer, rs *netstorage.Result
 }
 
 //line app/vmselect/prometheus/export.qtpl:19
-func ExportPrometheusLine(rs *netstorage.Result) string {
+func ExportPrometheusLine(rs *clickhouse.Result) string {
 //line app/vmselect/prometheus/export.qtpl:19
 	qb422016 := qt422016.AcquireByteBuffer()
 //line app/vmselect/prometheus/export.qtpl:19
@@ -152,7 +153,7 @@ func StreamExportJSONLine(qw422016 *qt422016.Writer, rs *netstorage.Result) {
 }
 
 //line app/vmselect/prometheus/export.qtpl:46
-func WriteExportJSONLine(qq422016 qtio422016.Writer, rs *netstorage.Result) {
+func WriteExportJSONLine(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:46
 	qw422016 := qt422016.AcquireWriter(qq422016)
 //line app/vmselect/prometheus/export.qtpl:46
@@ -193,7 +194,7 @@ func StreamExportPromAPILine(qw422016 *qt422016.Writer, rs *netstorage.Result) {
 }
 
 //line app/vmselect/prometheus/export.qtpl:53
-func WriteExportPromAPILine(qq422016 qtio422016.Writer, rs *netstorage.Result) {
+func WriteExportPromAPILine(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:53
 	qw422016 := qt422016.AcquireWriter(qq422016)
 //line app/vmselect/prometheus/export.qtpl:53

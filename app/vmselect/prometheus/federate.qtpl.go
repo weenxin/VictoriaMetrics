@@ -49,7 +49,7 @@ func StreamFederate(qw422016 *qt422016.Writer, rs *netstorage.Result) {
 }
 
 //line app/vmselect/prometheus/federate.qtpl:14
-func WriteFederate(qq422016 qtio422016.Writer, rs *netstorage.Result) {
+func WriteFederate(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/federate.qtpl:14
 	qw422016 := qt422016.AcquireWriter(qq422016)
 //line app/vmselect/prometheus/federate.qtpl:14

@@ -3,6 +3,7 @@ module github.com/VictoriaMetrics/VictoriaMetrics
 require (
 	cloud.google.com/go v0.60.0 // indirect
 	cloud.google.com/go/storage v1.10.0
+	github.com/ClickHouse/clickhouse-go v1.4.1
 	github.com/VictoriaMetrics/fastcache v1.5.7
 
 	// Do not use the original github.com/valyala/fasthttp because of issues
