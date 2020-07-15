@@ -6,7 +6,6 @@ package prometheus
 
 //line app/vmselect/prometheus/export.qtpl:1
 import (
-	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
 	"github.com/valyala/quicktemplate"
@@ -26,7 +25,7 @@ var (
 )
 
 //line app/vmselect/prometheus/export.qtpl:9
-func StreamExportPrometheusLine(qw422016 *qt422016.Writer, rs *netstorage.Result) {
+func StreamExportPrometheusLine(qw422016 *qt422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:10
 	if len(rs.Timestamps) == 0 {
 //line app/vmselect/prometheus/export.qtpl:10
@@ -89,7 +88,7 @@ func ExportPrometheusLine(rs *clickhouse.Result) string {
 }
 
 //line app/vmselect/prometheus/export.qtpl:21
-func StreamExportJSONLine(qw422016 *qt422016.Writer, rs *netstorage.Result) {
+func StreamExportJSONLine(qw422016 *qt422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:22
 	if len(rs.Timestamps) == 0 {
 //line app/vmselect/prometheus/export.qtpl:22
@@ -164,7 +163,7 @@ func WriteExportJSONLine(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 }
 
 //line app/vmselect/prometheus/export.qtpl:46
-func ExportJSONLine(rs *netstorage.Result) string {
+func ExportJSONLine(rs *clickhouse.Result) string {
 //line app/vmselect/prometheus/export.qtpl:46
 	qb422016 := qt422016.AcquireByteBuffer()
 //line app/vmselect/prometheus/export.qtpl:46
@@ -179,7 +178,7 @@ func ExportJSONLine(rs *netstorage.Result) string {
 }
 
 //line app/vmselect/prometheus/export.qtpl:48
-func StreamExportPromAPILine(qw422016 *qt422016.Writer, rs *netstorage.Result) {
+func StreamExportPromAPILine(qw422016 *qt422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/export.qtpl:48
 	qw422016.N().S(`{"metric":`)
 //line app/vmselect/prometheus/export.qtpl:50
@@ -205,7 +204,7 @@ func WriteExportPromAPILine(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 }
 
 //line app/vmselect/prometheus/export.qtpl:53
-func ExportPromAPILine(rs *netstorage.Result) string {
+func ExportPromAPILine(rs *clickhouse.Result) string {
 //line app/vmselect/prometheus/export.qtpl:53
 	qb422016 := qt422016.AcquireByteBuffer()
 //line app/vmselect/prometheus/export.qtpl:53

@@ -6,7 +6,7 @@ package prometheus
 
 //line app/vmselect/prometheus/federate.qtpl:1
 import (
-	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
+	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 )
 
 // Federate writes rs in /federate format.// See https://prometheus.io/docs/prometheus/latest/federation/
@@ -25,7 +25,7 @@ var (
 )
 
 //line app/vmselect/prometheus/federate.qtpl:9
-func StreamFederate(qw422016 *qt422016.Writer, rs *netstorage.Result) {
+func StreamFederate(qw422016 *qt422016.Writer, rs *clickhouse.Result) {
 //line app/vmselect/prometheus/federate.qtpl:10
 	if len(rs.Timestamps) == 0 || len(rs.Values) == 0 {
 //line app/vmselect/prometheus/federate.qtpl:10
@@ -60,7 +60,7 @@ func WriteFederate(qq422016 qtio422016.Writer, rs *clickhouse.Result) {
 }
 
 //line app/vmselect/prometheus/federate.qtpl:14
-func Federate(rs *netstorage.Result) string {
+func Federate(rs *clickhouse.Result) string {
 //line app/vmselect/prometheus/federate.qtpl:14
 	qb422016 := qt422016.AcquireByteBuffer()
 //line app/vmselect/prometheus/federate.qtpl:14

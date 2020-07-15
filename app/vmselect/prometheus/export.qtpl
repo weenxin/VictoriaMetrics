@@ -1,8 +1,8 @@
 {% import (
 	"github.com/valyala/quicktemplate"
-	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage"
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmselect/netstorage/clickhouse"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
+
 ) %}
 
 {% stripspace %}
