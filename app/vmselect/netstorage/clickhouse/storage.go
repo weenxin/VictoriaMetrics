@@ -8,7 +8,6 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/app/vmstorage"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/flagutil"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/storage"
-	"github.com/VictoriaMetrics/metrics"
 	"runtime"
 	"sync"
 )
@@ -98,9 +97,6 @@ func (rss *Results) RunParallel(f func(rs *Result, workerID uint)) error {
 	return nil
 }
 
-var perQueryRowsProcessed = metrics.NewHistogram(`vm_per_query_rows_processed_count`)
-var perQuerySeriesProcessed = metrics.NewHistogram(`vm_per_query_series_processed_count`)
-
 var gomaxprocs = runtime.GOMAXPROCS(-1)
 
 type packedTimeseries struct {
@@ -113,8 +109,6 @@ type packedTimeseries struct {
 	//brs        []storage.BlockRef
 }
 
-
-var dedupsDuringSelect = metrics.NewCounter(`vm_deduplicated_samples_total{type="select"}`)
 
 
 // DeleteSeries deletes time series matching the given tagFilterss.
