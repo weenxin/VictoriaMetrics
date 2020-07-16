@@ -36,14 +36,12 @@ const (
 
 
 
-func init(){
-
+func InitDatabase(){
 	var err error
 	connect, err = newClickhouseClient()
 	if err != nil {
 		panic("initialize clickhouse client error : %v"+ err.Error())
 	}
-
 }
 
 func newClickhouseClient() (*sql.DB, error) {
@@ -216,7 +214,7 @@ func addMetrics(timeSeries []*Result,meticName string, columns []string,
 	values []interface{}) []*Result{
 
 	formatMetricName := fomatMetricName(meticName,columns[1:len(columns)-1],values[1:len(values)-1])
-	timestamp := (values[0].(*time.Time)).Unix()
+	timestamp := (values[0].(*time.Time)).Unix() * 1000
 	value := *(values[len(values)-1].(*float64))
 
 
@@ -244,7 +242,9 @@ func addMetrics(timeSeries []*Result,meticName string, columns []string,
 }
 
 func query(sq *storage.SearchQuery, fetchData bool, deadline netstorage.Deadline)([]*Result, error){
-
+	if connect == nil {
+		InitDatabase()
+	}
 
 	metricName, err := getMetricName(sq)
 	if err != nil {
@@ -256,6 +256,7 @@ func query(sq *storage.SearchQuery, fetchData bool, deadline netstorage.Deadline
 	}
 
 	query := formatQuery(table,aggregation,filed,sq)
+	fmt.Println(query)
 
 
 
