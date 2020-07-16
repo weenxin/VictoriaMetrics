@@ -144,7 +144,7 @@ func getFiledOperationQuery(filter storage.TagFilter)string{
 		}
 	}
 
-	return filed + operation + string(filter.Value)
+	return fmt.Sprintf("%v %v '%v'",filed,operation,string(filter.Value))
 }
 
 func getGroupbyQuery() string {
@@ -214,7 +214,8 @@ func metricNameEqueal(first *storage.MetricName, second *storage.MetricName)bool
 
 func addMetrics(timeSeries []*Result,meticName string, columns []string,
 	values []interface{}) []*Result{
-	formatMetricName := fomatMetricName(meticName,columns,values[1:len(values)-1])
+
+	formatMetricName := fomatMetricName(meticName,columns[1:len(columns)-1],values[1:len(values)-1])
 	timestamp := (values[0].(*time.Time)).Unix()
 	value := *(values[len(values)-1].(*float64))
 
@@ -230,8 +231,10 @@ func addMetrics(timeSeries []*Result,meticName string, columns []string,
 	if !found{
 		result := Result{}
 		result.MetricName = formatMetricName
-		result.Values = make([]float64,1024)
-		result.Timestamps = make([]int64 , 1024)
+		result.Values = make([]float64,0,1024)
+		result.Timestamps = make([]int64,0, 1024)
+		result.Values = append(result.Values,value)
+		result.Timestamps = append(result.Timestamps,timestamp)
 		timeSeries = append(timeSeries,&result)
 	}
 
@@ -283,7 +286,7 @@ func query(sq *storage.SearchQuery, fetchData bool, deadline netstorage.Deadline
 		if err := rows.Scan(fileds...); err != nil {
 			log.Fatal(err)
 		}else{
-			addMetrics(series,metricName,columns,fileds)
+			series = addMetrics(series,metricName,columns,fileds)
 		}
 	}
 
