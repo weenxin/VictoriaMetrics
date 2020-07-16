@@ -21,6 +21,8 @@ var (
 	clickhouseTimesampFiled = flag.String("clickhouse.timestamp", "timestamp", "timestamp column name in table")
  	clickhouseTags = flagutil.NewArray("clickhouse.tag", "fields to keep --clickhouse.tag=subtag --clickhouse." +
  		"tag=extra1")
+ 	clickhouseDateField = flag.String("clickhouse.dateField", "default",
+ 		"clickhouse  date file if assigned query will add date >= and date <= ")
 
 	clickhoseFileds = flagutil.NewArray("clickhouse.filed", "fields to keep --clickhouse.filed=count --clickhouse." +
 		"tag=sum")

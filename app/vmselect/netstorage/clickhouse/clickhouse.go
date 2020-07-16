@@ -156,6 +156,7 @@ func getGroupbyQuery() string {
 func getWhereQuery(sq *storage.SearchQuery) string{
 	timeQuery := fmt.Sprintf("%v > %v AND %v < %v",
 		*clickhouseTimesampFiled,sq.MinTimestamp/1000, *clickhouseTimesampFiled,sq.MaxTimestamp/1000)
+
 	fieldFilter := []string{timeQuery}
 	for _,filters := range sq.TagFilterss {
 		for _, filter := range filters{
@@ -164,6 +165,14 @@ func getWhereQuery(sq *storage.SearchQuery) string{
 			}
 
 		}
+	}
+
+	if *clickhouseDateField != ""{
+		fieldFilter = append(fieldFilter,fmt.Sprintf(" %v >= '%v' AND %v <= '%v' " ,
+			*clickhouseDateField,
+			time.Unix(sq.MinTimestamp/1000,0).Format("2006-01-02"),
+			*clickhouseDateField,
+			time.Unix(sq.MaxTimestamp/1000,0).Format("2006-01-02")))
 	}
 
 	return strings.Join(fieldFilter," AND ")
