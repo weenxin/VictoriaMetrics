@@ -29,6 +29,7 @@ require (
 	google.golang.org/api v0.28.0
 	google.golang.org/grpc v1.30.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
+		git.corp.kuaishou.com/infra/infra-framework-go.git v0.0.0-20200716064232-159a2363b69f
 )
 
 go 1.13

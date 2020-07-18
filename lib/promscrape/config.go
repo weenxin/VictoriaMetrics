@@ -21,6 +21,7 @@ import (
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/promscrape/discovery/gce"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/promscrape/discovery/kubernetes"
 	"gopkg.in/yaml.v2"
+	"git.corp.kuaishou.com/infra/infra-framework-go.git/kess"
 )
 
 var (
@@ -30,6 +31,7 @@ var (
 		"Returns non-zero exit code on parsing errors and emits these errors to stderr. "+
 		"Pass -loggerLevel=ERROR if you don't need to see info messages in the output")
 )
+
 
 // Config represents essential parts from Prometheus config defined at https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 type Config struct {
@@ -66,6 +68,7 @@ type ScrapeConfig struct {
 	BearerTokenFile      string                      `yaml:"bearer_token_file"`
 	TLSConfig            *promauth.TLSConfig         `yaml:"tls_config"`
 	StaticConfigs        []StaticConfig              `yaml:"static_configs"`
+	KessConfig           []KessConfig                `yaml:"kess_configs"`
 	FileSDConfigs        []FileSDConfig              `yaml:"file_sd_configs"`
 	KubernetesSDConfigs  []kubernetes.SDConfig       `yaml:"kubernetes_sd_configs"`
 	ConsulSDConfigs      []consul.SDConfig           `yaml:"consul_sd_configs"`
@@ -98,6 +101,11 @@ type FileSDConfig struct {
 type StaticConfig struct {
 	Targets []string          `yaml:"targets"`
 	Labels  map[string]string `yaml:"labels"`
+}
+type KessConfig struct {
+	ServiceName string          `yaml:"service"`
+	Labels  map[string]string `yaml:"labels"`
+	targets []string
 }
 
 func loadStaticConfigs(path string) ([]StaticConfig, error) {
@@ -346,6 +354,35 @@ func (cfg *Config) getStaticScrapeWork() []ScrapeWork {
 	}
 	return dst
 }
+// getStaticScrapeWork returns `static_configs` ScrapeWork from from cfg.
+func (cfg *Config) getKessScrapeWork() []ScrapeWork {
+	var dst []ScrapeWork
+	for i := range cfg.ScrapeConfigs {
+		sc := &cfg.ScrapeConfigs[i]
+		for j := range sc.KessConfig {
+			stc := &sc.KessConfig[j]
+			targets := stc.targets
+			d, err := kess.NewHTTPDiscover(stc.ServiceName)
+			if err != nil {
+				logger.Errorf("kess service %v discover failed,  error :%v " , stc.ServiceName ,  err.Error())
+			}else{
+				nodes, err := d.GetAll()
+				if err != nil {
+					logger.Errorf("kess service %v get node failed, error : %v",stc.ServiceName,err.Error())
+				}else{
+					targets = []string{}
+					for _, node := range nodes{
+						targets = append(targets,fmt.Sprintf("%v:%v",node.Host,node.Port))
+					}
+				}
+			}
+			stc.targets = targets
+			dst = stc.appendScrapeWork(dst, sc.swc, nil)
+		}
+	}
+	return dst
+}
+
 
 func getScrapeWorkConfig(sc *ScrapeConfig, baseDir string, globalCfg *GlobalConfig) (*scrapeWorkConfig, error) {
 	jobName := sc.JobName
@@ -552,6 +589,25 @@ func (stc *StaticConfig) appendScrapeWork(dst []ScrapeWork, swc *scrapeWorkConfi
 	}
 	return dst
 }
+
+func (stc *KessConfig) appendScrapeWork(dst []ScrapeWork, swc *scrapeWorkConfig, metaLabels map[string]string) []ScrapeWork {
+	for _, target := range stc.targets {
+		if target == "" {
+			// Do not return this error, since other targets may be valid
+			logger.Errorf("`static_configs` target for `job_name` %q cannot be empty; skipping it", swc.jobName)
+			continue
+		}
+		var err error
+		dst, err = appendScrapeWork(dst, swc, target, stc.Labels, metaLabels)
+		if err != nil {
+			// Do not return this error, since other targets may be valid
+			logger.Errorf("error when parsing `static_configs` target %q for `job_name` %q: %s; skipping it", target, swc.jobName, err)
+			continue
+		}
+	}
+	return dst
+}
+
 
 func appendScrapeWork(dst []ScrapeWork, swc *scrapeWorkConfig, target string, extraLabels, metaLabels map[string]string) ([]ScrapeWork, error) {
 	labels := mergeLabels(swc.jobName, swc.scheme, target, swc.metricsPath, extraLabels, swc.externalLabels, metaLabels, swc.params)
