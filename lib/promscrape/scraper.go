@@ -83,7 +83,7 @@ func runScraper(configFile string, pushData func(wr *prompbmarshal.WriteRequest)
 
 	scs := newScrapeConfigs(pushData)
 	scs.add("static_configs", 0, func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getStaticScrapeWork() })
-	scs.add("kess_configs",time.Second*60,func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getStaticScrapeWork() })
+	scs.add("kess_configs",time.Second*60,func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getKessScrapeWork() })
 	scs.add("file_sd_configs", *fileSDCheckInterval, func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getFileSDScrapeWork(swsPrev) })
 	scs.add("kubernetes_sd_configs", *kubernetesSDCheckInterval, func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getKubernetesSDScrapeWork(swsPrev) })
 	scs.add("consul_sd_configs", *consulSDCheckInterval, func(cfg *Config, swsPrev []ScrapeWork) []ScrapeWork { return cfg.getConsulSDScrapeWork(swsPrev) })
